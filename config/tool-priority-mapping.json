@@ -1,0 +1,59 @@
+{
+  "version": "2.0",
+  "description": "Phase 3: 信息源自适应 - 类别到工具优先级的映射",
+  "categoryMapping": {
+    "finance": {
+      "priority1": ["tushare-api", "stock-monitor", "us-stock-data"],
+      "priority2": ["policy-scan", "web_search", "multi-search-engine"],
+      "priority3": ["github", "code-analysis"],
+      "description": "金融/量化类议题"
+    },
+    "ai-tech": {
+      "priority1": ["exa-search", "arxiv", "hackernews-ai"],
+      "priority2": ["web_search", "multi-search-engine"],
+      "priority3": ["financial-data"],
+      "description": "AI 技术学习类议题"
+    },
+    "dev-tools": {
+      "priority1": ["github-api", "session-logs", "jq"],
+      "priority2": ["web_search", "producthunt"],
+      "priority3": ["financial-data"],
+      "description": "开发工具类议题"
+    },
+    "openclaw-ecosystem": {
+      "priority1": ["config-files", "session-logs", "clawhub"],
+      "priority2": ["github-openclaw", "openclaw-docs"],
+      "priority3": ["external-apis"],
+      "description": "OpenClaw 生态优化类议题"
+    },
+    "social-trends": {
+      "priority1": ["twitter-x", "reddit", "moltbook"],
+      "priority2": ["farcaster", "producthunt"],
+      "priority3": ["academic-papers"],
+      "description": "社交趋势/市场调研类议题"
+    },
+    "general-news": {
+      "priority1": ["web_search", "multi-search-engine"],
+      "priority2": ["jina-search", "rss-feeds"],
+      "priority3": ["specialized-databases"],
+      "description": "综合新闻类议题"
+    }
+  },
+  "tokenStrategy": {
+    "abundant": {
+      "threshold": 0.8,
+      "strategy": "Use Priority 1+2 tools",
+      "description": "Token 充足 (>80% 剩余)"
+    },
+    "tight": {
+      "threshold": 0.5,
+      "strategy": "Use Priority 1 only",
+      "description": "Token 紧张 (<50% 剩余)"
+    },
+    "critical": {
+      "threshold": 0.2,
+      "strategy": "Core APIs only, skip search",
+      "description": "Token 紧急 (<20% 剩余)"
+    }
+  }
+}

@@ -1,0 +1,350 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-03-08",
+  
+  "categories": {
+    "ai-tech": {
+      "name": "AI 技术",
+      "description": "AI/LLM/Agent 技术动态",
+      "sources": ["exa-search", "hackernews-ai", "arxiv", "github-ai", "twitter-ai"]
+    },
+    "openclaw-ecosystem": {
+      "name": "OpenClaw 生态",
+      "description": "OpenClaw/Moltbot/ClawHub 相关",
+      "sources": ["github-openclaw", "clawhub", "moltbook", "session-capture"]
+    },
+    "social-trends": {
+      "name": "社交趋势",
+      "description": "社交媒体讨论和趋势",
+      "sources": ["twitter-x", "reddit", "farcaster", "producthunt"]
+    },
+    "dev-tools": {
+      "name": "开发工具",
+      "description": "开发者工具和效率",
+      "sources": ["github-trending", "producthunt-dev", "hackernews"]
+    },
+    "general-news": {
+      "name": "综合新闻",
+      "description": "综合科技新闻",
+      "sources": ["brave-search", "multi-engine", "jina-search"]
+    }
+  },
+
+  "topicTemplates": {
+    "optimize-workflow": {
+      "categories": ["openclaw-ecosystem", "dev-tools"],
+      "description": "优化 OpenClaw 工作流"
+    },
+    "learn-ai-tech": {
+      "categories": ["ai-tech", "general-news"],
+      "description": "学习 AI 技术"
+    },
+    "market-research": {
+      "categories": ["social-trends", "general-news"],
+      "description": "市场调研"
+    },
+    "competitive-analysis": {
+      "categories": ["openclaw-ecosystem", "social-trends", "general-news"],
+      "description": "竞品分析"
+    }
+  },
+
+  "sources": [
+    {
+      "id": "exa-search",
+      "type": "skill",
+      "category": "ai-tech",
+      "tool": "exa-search",
+      "description": "Exa AI 语义搜索 - 论文、博客、技术内容",
+      "config": {
+        "model": "semantic",
+        "numResults": 10,
+        "includeDomains": ["arxiv.org", "github.com", "medium.com", "substack.com"]
+      },
+      "frequency": "daily",
+      "qualityScore": 4.5,
+      "priority": 1,
+      "enabled": true,
+      "tokenCost": "medium"
+    },
+    {
+      "id": "brave-search",
+      "type": "builtin",
+      "category": "general-news",
+      "tool": "web_search",
+      "description": "Brave Search API - 通用搜索",
+      "config": {
+        "count": 10,
+        "freshness": "pw"
+      },
+      "frequency": "daily",
+      "qualityScore": 4.2,
+      "priority": 1,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "multi-engine-search",
+      "type": "skill",
+      "category": "general-news",
+      "tool": "multi-search-engine",
+      "description": "多搜索引擎 - 17 个引擎覆盖",
+      "config": {
+        "engines": ["google", "bing", "duckduckgo", "baidu"],
+        "deduplicate": true
+      },
+      "frequency": "daily",
+      "qualityScore": 4.0,
+      "priority": 2,
+      "enabled": true,
+      "tokenCost": "high"
+    },
+    {
+      "id": "jina-search",
+      "type": "api",
+      "category": "general-news",
+      "tool": "curl",
+      "url": "https://s.jina.ai",
+      "description": "Jina AI 搜索 - AI 优化结果",
+      "config": {
+        "method": "POST",
+        "headers": {"Content-Type": "application/json"}
+      },
+      "frequency": "daily",
+      "qualityScore": 4.3,
+      "priority": 2,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "jina-reader",
+      "type": "api",
+      "category": "reader",
+      "tool": "curl",
+      "url": "https://r.jina.ai/{encodedUrl}",
+      "description": "Jina AI 阅读器 - 避免反爬",
+      "config": {
+        "method": "GET"
+      },
+      "frequency": "on-demand",
+      "qualityScore": 4.5,
+      "priority": 1,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "github-openclaw",
+      "type": "github-api",
+      "category": "openclaw-ecosystem",
+      "url": "https://api.github.com/repos/openclaw/openclaw",
+      "endpoints": ["issues", "releases", "discussions"],
+      "description": "OpenClaw 官方仓库",
+      "frequency": "daily",
+      "qualityScore": 4.8,
+      "priority": 1,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "github-trending",
+      "type": "github-api",
+      "category": "dev-tools",
+      "url": "https://api.github.com/search/repositories",
+      "params": {
+        "q": "openclaw OR clawhub OR moltbot OR ai-agent",
+        "sort": "updated"
+      },
+      "description": "GitHub 趋势项目",
+      "frequency": "daily",
+      "qualityScore": 4.0,
+      "priority": 2,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "clawhub",
+      "type": "api",
+      "category": "openclaw-ecosystem",
+      "url": "https://clawhub.com/api/skills",
+      "description": "ClawHub 技能市场",
+      "frequency": "daily",
+      "qualityScore": 4.5,
+      "priority": 1,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "twitter-x-ai",
+      "type": "twitter-api",
+      "category": "ai-tech",
+      "tool": "curl",
+      "url": "https://api.twitter.com/2/tweets/search/recent",
+      "params": {
+        "query": "(AI OR LLM OR agent) -is:retweet",
+        "max_results": 10
+      },
+      "description": "X (Twitter) AI 讨论",
+      "frequency": "daily",
+      "qualityScore": 4.0,
+      "priority": 2,
+      "enabled": false,
+      "requires": "TWITTER_API_KEY",
+      "tokenCost": "low"
+    },
+    {
+      "id": "twitter-x-openclaw",
+      "type": "twitter-api",
+      "category": "openclaw-ecosystem",
+      "tool": "curl",
+      "url": "https://api.twitter.com/2/tweets/search/recent",
+      "params": {
+        "query": "(openclaw OR clawhub OR moltbot) -is:retweet",
+        "max_results": 10
+      },
+      "description": "X (Twitter) OpenClaw 讨论",
+      "frequency": "daily",
+      "qualityScore": 4.2,
+      "priority": 1,
+      "enabled": false,
+      "requires": "TWITTER_API_KEY",
+      "tokenCost": "low"
+    },
+    {
+      "id": "reddit-ai",
+      "type": "reddit",
+      "category": "ai-tech",
+      "subreddits": ["ArtificialIntelligence", "LocalLLaMA", "AIResearch"],
+      "description": "Reddit AI 讨论",
+      "frequency": "daily",
+      "qualityScore": 3.8,
+      "priority": 3,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "reddit-openclaw",
+      "type": "reddit",
+      "category": "openclaw-ecosystem",
+      "subreddits": ["openclaw"],
+      "description": "Reddit OpenClaw 讨论",
+      "frequency": "daily",
+      "qualityScore": 4.0,
+      "priority": 2,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "neynar-farcaster",
+      "type": "skill",
+      "category": "social-trends",
+      "tool": "neynar",
+      "description": "Farcaster 社交协议",
+      "config": {
+        "queries": ["AI agents", "openclaw"],
+        "limit": 10
+      },
+      "frequency": "daily",
+      "qualityScore": 3.8,
+      "priority": 3,
+      "enabled": true,
+      "requires": "NEYNAR_API_KEY",
+      "tokenCost": "medium"
+    },
+    {
+      "id": "moltbook",
+      "type": "feishu-doc",
+      "category": "openclaw-ecosystem",
+      "tool": "feishu_doc",
+      "description": "个人社交记录和笔记",
+      "frequency": "daily",
+      "qualityScore": 4.5,
+      "priority": 2,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "hackernews-ai",
+      "type": "rss",
+      "category": "ai-tech",
+      "url": "https://news.ycombinator.com/newest.rss",
+      "filter": "AI OR LLM OR agent OR openclaw",
+      "description": "Hacker News AI 相关",
+      "frequency": "daily",
+      "qualityScore": 4.2,
+      "priority": 2,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "arxiv-ai",
+      "type": "api",
+      "category": "ai-tech",
+      "url": "http://export.arxiv.org/api/query",
+      "params": {
+        "search_query": "cat:cs.AI OR cat:cs.LG",
+        "max_results": 10
+      },
+      "description": "arXiv AI 论文",
+      "frequency": "weekly",
+      "qualityScore": 4.8,
+      "priority": 3,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "producthunt-ai",
+      "type": "rss",
+      "category": "dev-tools",
+      "url": "https://www.producthunt.com/rss",
+      "filter": "AI agent",
+      "description": "Product Hunt AI 产品",
+      "frequency": "daily",
+      "qualityScore": 3.5,
+      "priority": 3,
+      "enabled": true,
+      "tokenCost": "low"
+    },
+    {
+      "id": "session-capture",
+      "type": "hook",
+      "category": "openclaw-ecosystem",
+      "source": "current-session",
+      "description": "会话捕获（脱敏）",
+      "frequency": "per-prompt",
+      "qualityScore": 4.0,
+      "priority": 1,
+      "enabled": true,
+      "anonymize": true,
+      "tokenCost": "none"
+    }
+  ],
+
+  "blacklist": {
+    "domains": [
+      "content-farm.com",
+      "clickbait.net",
+      "spam-domain.xyz"
+    ],
+    "patterns": [
+      "AI-generated",
+      "sponsored",
+      "affiliate",
+      "click here",
+      "you won't believe"
+    ],
+    "minWordCount": 100,
+    "maxAge": {
+      "news": "72h",
+      "tutorial": "6m",
+      "reference": "2y",
+      "social": "24h",
+      "paper": "5y"
+    }
+  },
+
+  "tokenBudgets": {
+    "low": { "perSource": 5000, "total": 20000 },
+    "medium": { "perSource": 10000, "total": 40000 },
+    "high": { "perSource": 20000, "total": 60000 }
+  }
+}
