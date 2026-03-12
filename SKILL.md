@@ -111,8 +111,66 @@ P1 信息收集 → P2 价值筛选 → P3 反思洞察 → P4 推演验证 → 
 
 ## 参考文档
 
-- [references/DETAILED_GUIDE.md](./references/DETAILED_GUIDE.md) - 详细指南
-- [references/EXAMPLES.md](./references/EXAMPLES.md) - 使用示例
+- [references/DETAILED_GUIDE.md](./references/DETAILED_GUIDE.md) - 详细指南、常见错误、经验教训
+
+---
+
+## 使用示例
+
+### 基础用法
+
+```bash
+# 启动议题
+brush-up start --topic="学习 React 新特性"
+
+# 多 channel 环境必需指定渠道
+brush-up start --topic="优化工作流" --channel="telegram:CHAT_ID"
+```
+
+### 完整参数
+
+```bash
+brush-up start \
+  --topic="系统架构优化" \
+  --agent=main \
+  --categories="dev-tools,ai-tech" \
+  --frequency=weekly \
+  --mode=full \
+  --priority=high \
+  --channel="telegram:CHAT_ID"
+```
+
+### 管理命令
+
+```bash
+brush-up list          # 列出议题
+brush-up stop <id>     # 停止议题
+brush-up rm <id>       # 删除议题
+```
+
+---
+
+## 报告模板
+
+```markdown
+# 📊 Brush-Up 循环报告
+
+**议题**: {{topic}}
+**循环**: #{{n}} ({{date}})
+
+## 1️⃣ 议题信息
+## 2️⃣ 高价值信息小结
+## 3️⃣ 核心观点提炼
+## 4️⃣ 议题现状
+## 5️⃣ 启发和提升
+## 6️⃣ 方案和提案
+| 提案 | 内容 | 风险 | 建议 |
+|------|------|------|------|
+| A | ... | 🟢 低 | ✅ 批准 |
+| B | ... | 🟡 中 | 🤔 试点 |
+## 7️⃣ 历史对比
+## 8️⃣ 下周计划
+```
 
 ---
 
