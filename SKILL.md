@@ -68,9 +68,9 @@ metadata:
 
 **启动命令增强**:
 ```bash
-brush-up start --topic="港股自动交易系统优化" \
-  --agent=Marcus \
-  --categories="finance,ai-tech,dev-tools" \
+brush-up start --topic="优化工作流效率" \
+  --agent=main \
+  --categories="dev-tools,ai-tech" \
   --frequency=weekly \
   --mode=standard
 ```
@@ -79,16 +79,16 @@ brush-up start --topic="港股自动交易系统优化" \
 | 功能 | 说明 | 示例 |
 |------|------|------|
 | **议题去重** | 检查是否已存在同名/相似议题 | 发现重复时提示合并 |
-| **Agent 从属** | 自动关联对应 agent 的目录结构 | 港股议题→Marcus |
-| **Categories 推荐** | 基于议题名称自动推荐类别 | "港股"→finance |
+| **Agent 从属** | 自动关联对应 agent 的目录结构 | 金融议题→finance-agent |
+| **Categories 推荐** | 基于议题名称自动推荐类别 | "交易"→finance |
 | **频率建议** | 根据议题类型建议循环频率 | 机制优化→每周，市场监控→每日 |
-| **Cron 验证** | 创建后自动验证 delivery 配置 | 检查 telegram 的 `to` 字段 |
+| **Cron 验证** | 创建后自动验证 delivery 配置 | 检查 channel 配置 |
 | **状态追踪** | 自动更新 cycleCount 和 lastCycle | 报告生成后更新 |
 
 **Categories 自动映射**:
 | 关键词 | 推荐类别 | 建议频率 |
 |--------|----------|----------|
-| 港股/A 股/交易/量化 | finance | 每日 |
+| 交易/量化/市场 | finance | 每日 |
 | 优化/改进/效率 | dev-tools,openclaw-ecosystem | 每周 |
 | 学习/研究/技术 | ai-tech,general-news | 每周 |
 | 市场/竞品/用户 | social-trends,general-news | 每日 |
@@ -314,20 +314,20 @@ brush-up/scripts/auto-propose.sh
 
 基于过去 7 天的分析，我发现了 3 个可改进的模式：
 
-**议题 A**: 修复 13:30 任务超时问题
-- **触发事件**: 3 次超时错误 (4a343eca)
-- **影响**: 报告延迟送达，用户无法及时决策
+**议题 A**: 修复任务超时问题
+- **触发事件**: 3 次超时错误
+- **影响**: 报告延迟送达，无法及时决策
 - **预计工作量**: 2-3 小时
 - **推荐优先级**: 🔴 高
 
-**议题 B**: 优化 Telegram 配置管理
-- **触发事件**: 2 次 delivery.to 配置缺失
+**议题 B**: 优化 Channel 配置管理
+- **触发事件**: 2 次 delivery 配置缺失
 - **影响**: 报告无法送达
 - **预计工作量**: 1 小时
 - **推荐优先级**: 🟡 中
 
 **议题 C**: 建立 Cron 健康检查机制
-- **触发事件**: 12 个 error 任务持续存在
+- **触发事件**: 多个 error 任务持续存在
 - **影响**: 系统可靠性下降
 - **预计工作量**: 4-6 小时
 - **推荐优先级**: 🟡 中
@@ -400,13 +400,13 @@ brush-up start --topic="优化工作流" --channel="telegram:CHAT_ID"
 
 启动议题时，系统根据议题名称自动推荐以下配置：
 
-| 关键词 | Agent | 类别 | 频率 | 模式 |
-|--------|-------|------|------|------|
-| 港股/A股/交易/量化 | Marcus | finance | daily | standard |
-| 优化/改进/机制/流程 | main | openclaw-ecosystem | weekly | standard |
-| 新闻/同步/简报/例行 | main | general-news | daily | **light** |
-| 重构/架构/系统设计 | main | dev-tools | weekly | **full** |
-| 学习/研究/AI/技术 | main | ai-tech | weekly | standard |
+| 关键词 | 推荐类别 | 频率 | 模式 |
+|--------|----------|------|------|
+| 新闻/同步/简报/例行 | general-news | daily | **light** |
+| 重构/架构/系统设计 | dev-tools | weekly | **full** |
+| 优化/改进/机制/流程 | openclaw-ecosystem | weekly | standard |
+| 交易/量化/市场 | finance | daily | standard |
+| 学习/研究/AI/技术 | ai-tech | weekly | standard |
 
 ### 查看议题
 
@@ -483,27 +483,24 @@ brush-up rm optimize-workflow
 
 **Agent 级别隔离设计**:
 ```
-~/.openclaw/workspace/agents/{agent-id}/brush-up/  # 按 Agent 隔离
-├── {agent-1}/brush-up/
-│   ├── topics/
-│   │   └── active.json                     # 当前活跃议题
-│   ├── logs/
-│   │   ├── cycles/                         # 循环报告
-│   │   ├── insights/                       # 洞察记录
-│   │   └── experiments/                    # 实验记录
-│   └── config/
-│       └── cron-jobs.json                  # Cron 配置
-├── {agent-2}/brush-up/
-│   └── ...                                 # 其他 agent 的独立数据
+{openclaw-workspace}/agents/{agent-id}/brush-up/
+├── topics/
+│   └── active.json              # 当前活跃议题
+├── logs/
+│   ├── cycles/                  # 循环报告
+│   ├── insights/                # 洞察记录
+│   └── experiments/             # 实验记录
+└── config/
+    └── cron-jobs.json           # Cron 配置
 ```
 
 **共享资源**:
 ```
-~/.openclaw/workspace/skills/brush-up/        # Skill 目录（所有 agent 共享）
-├── SKILL.md                                   # 技能说明
+{openclaw-workspace}/skills/brush-up/
+├── SKILL.md                     # 技能说明
 ├── config/
-│   └── sources.json                          # 信息源配置（共享）
-└── scripts/                                   # 执行脚本（共享）
+│   └── sources.json             # 信息源配置（共享）
+└── scripts/                     # 执行脚本（共享）
 ```
 
 **Agent ID 检测优先级**:

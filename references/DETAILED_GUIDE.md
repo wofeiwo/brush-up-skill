@@ -13,23 +13,23 @@
 brush-up start --topic="优化工作流"
 
 # 指定投递渠道（多 channel 环境必需）
-brush-up start --topic="优化工作流" --channel="telegram:8769744986"
+brush-up start --topic="优化工作流" --channel="telegram:CHAT_ID"
 
 # 指定 agent
-brush-up start --topic="港股止损优化" --agent=marcus
+brush-up start --topic="交易止损优化" --agent=finance-agent
 
 # 使用模板
 brush-up start --topic="学习 LLM 优化" --template=learn-ai-tech
 
 # 完整参数
 brush-up start \
-  --topic="优化 OpenClaw 工作流" \
+  --topic="优化工作流程" \
   --agent=main \
   --categories="openclaw-ecosystem,dev-tools" \
   --frequency=weekly \
   --mode=standard \
   --priority=high \
-  --channel="telegram:8769744986"
+  --channel="telegram:CHAT_ID"
 ```
 
 ---
@@ -209,9 +209,9 @@ openclaw status
 
 ## 🔗 相关链接
 
-- **SKILL.md**: [SKILL.md](./SKILL.md) - 主文档
-- **UPGRADE-v2.0.md**: [UPGRADE-v2.0.md](./UPGRADE-v2.0.md) - v2.0 升级报告
-- **sources.json**: [config/sources.json](./config/sources.json) - 信息源配置
+- **SKILL.md**: [SKILL.md](../SKILL.md) - 主文档
+- **EXAMPLES.md**: [EXAMPLES.md](./EXAMPLES.md) - 使用示例
+- **sources.json**: [../config/sources.json](../config/sources.json) - 信息源配置
 
 ---
 
@@ -244,7 +244,7 @@ openclaw status
 | 关键词 | 推荐频率 | 说明 |
 |--------|---------|------|
 | 优化/改进/机制/流程 | weekly | 机制类每周一次足够 |
-| 港股/市场/交易/监控 | daily | 市场类需要每日跟踪 |
+| 交易/市场/监控 | daily | 市场类需要每日跟踪 |
 | 其他 | daily | 默认每日 |
 
 ---
