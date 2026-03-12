@@ -1,6 +1,10 @@
 ---
 name: brush-up
 description: 持续自我改进技能。针对特定任务/议题，每日循环：信息收集→价值筛选→反思洞察→推演验证→分级授权汇报→实施沉淀。核心约束：未经批准不执行危险操作、不泄露隐私、人类最终决策、Token 效率优先。按需启动 Cron/Hook。
+version: "2.1"
+changelog: |
+  v2.1 (2026-03-12): 修复 Cron channel 配置问题，添加 --channel 参数支持
+  v2.0 (2026-03-11): 新增配置自动化、流程分级、信息源自适应、Agent 能力培养
 metadata:
   {
     "openclaw": {
@@ -14,7 +18,7 @@ metadata:
 
 **按需启动**: 有新议题时创建 Cron/Hook，无任务时不占用资源。
 
-**版本**: v2.0 (2026-03-11) - 新增配置自动化、流程分级、信息源自适应
+**版本**: v2.1 (2026-03-12) - 新增流程分级默认策略、频率自动推荐、强制反思提示
 
 ---
 
@@ -64,8 +68,8 @@ metadata:
 
 **启动命令增强**:
 ```bash
-brush-up start --topic="优化交易系统" \
-  --agent=Agent-A \
+brush-up start --topic="港股自动交易系统优化" \
+  --agent=Marcus \
   --categories="finance,ai-tech,dev-tools" \
   --frequency=weekly \
   --mode=standard
@@ -75,7 +79,7 @@ brush-up start --topic="优化交易系统" \
 | 功能 | 说明 | 示例 |
 |------|------|------|
 | **议题去重** | 检查是否已存在同名/相似议题 | 发现重复时提示合并 |
-| **Agent 从属** | 自动关联对应 agent 的目录结构 | 金融类议题→Agent-A |
+| **Agent 从属** | 自动关联对应 agent 的目录结构 | 港股议题→Marcus |
 | **Categories 推荐** | 基于议题名称自动推荐类别 | "港股"→finance |
 | **频率建议** | 根据议题类型建议循环频率 | 机制优化→每周，市场监控→每日 |
 | **Cron 验证** | 创建后自动验证 delivery 配置 | 检查 telegram 的 `to` 字段 |
@@ -84,7 +88,7 @@ brush-up start --topic="优化交易系统" \
 **Categories 自动映射**:
 | 关键词 | 推荐类别 | 建议频率 |
 |--------|----------|----------|
-| 金融/交易/量化 | finance | 每日 |
+| 港股/A 股/交易/量化 | finance | 每日 |
 | 优化/改进/效率 | dev-tools,openclaw-ecosystem | 每周 |
 | 学习/研究/技术 | ai-tech,general-news | 每周 |
 | 市场/竞品/用户 | social-trends,general-news | 每日 |
@@ -130,10 +134,10 @@ P1 信息收集 → P2 价值筛选 → P3 反思洞察 → P4 推演验证 → 
 brush-up start --topic="每周 AI 新闻同步" --mode=light --frequency=weekly
 
 # 标准模式（默认）
-brush-up start --topic="优化交易策略策略" --mode=standard
+brush-up start --topic="优化港股止损策略" --mode=standard
 
 # 完整模式
-brush-up start --topic="重构记忆系统" --mode=full
+brush-up start --topic="重构 OpenClaw 记忆系统" --mode=full
 ```
 
 ---
@@ -164,7 +168,7 @@ brush-up start --topic="重构记忆系统" --mode=full
 **启动时自动匹配**:
 ```bash
 # 金融类议题 - 自动启用 tushare + 持仓分析
-brush-up start --topic="优化交易策略" --categories=finance
+brush-up start --topic="优化港股止损" --categories=finance
 
 # 技术类议题 - 自动启用 exa-search + arxiv
 brush-up start --topic="学习 LLM 优化" --categories=ai-tech
@@ -358,22 +362,16 @@ brush-up/scripts/auto-propose.sh
 ### 开始新议题
 
 ```bash
-# 方式 1: 使用预设模板（自动检测当前 agent）
-brush-up start --topic="学习 LLM 优化" --template=learn-ai-tech --priority=high
+# 基础用法
+brush-up start --topic="学习 LLM 优化"
 
-# 方式 2: 指定 agent（为特定 agent 创建议题）
-brush-up start --topic="优化工作流" --agent=agent-c --template=optimize-workflow
+# 多 channel 环境必需指定投递渠道
+brush-up start --topic="优化工作流" --channel="telegram:CHAT_ID"
 
-# 方式 3: 手动指定类别
-brush-up start --topic="竞品分析" --agent=main --categories=social-trends,openclaw-ecosystem
-
-# 方式 4: 默认配置（使用所有类别）
-brush-up start --topic="优化工作流" --agent=agent-a --priority=high
-
-# 方式 5: 直接告诉 AI
-"帮我启动一个 brush-up 议题，任务是优化 OpenClaw 技能使用效率"
-# → 自动使用当前 agent ID
+# 查看详细用法和常见错误 → references/DETAILED_GUIDE.md
 ```
+
+**⚠️ 多 Channel 必需**: 如果 OpenClaw 配置了多个 channel，必须使用 `--channel` 参数，否则任务会失败。详见 [references/DETAILED_GUIDE.md](./references/DETAILED_GUIDE.md)。
 
 **预设模板**:
 | 模板 | 类别 | 适用场景 |
@@ -393,10 +391,22 @@ brush-up start --topic="优化工作流" --agent=agent-a --priority=high
 | `general-news` | 综合新闻 | brave-search, multi-engine, jina |
 
 **启动后自动创建**:
-- ✅ Cron 任务（每日 08:00 收集信息，21:00 生成报告）
+- ✅ 议题配置（自动检测 Agent、类别、频率、模式）
+- ✅ Cron 任务（每日/每周，按议题类型自动推荐）
 - ✅ Session Hook（捕获对话作为信息源）
-- ✅ 议题配置（按类别启用信息源）
 - ✅ 日志目录
+
+### 自动推荐逻辑
+
+启动议题时，系统根据议题名称自动推荐以下配置：
+
+| 关键词 | Agent | 类别 | 频率 | 模式 |
+|--------|-------|------|------|------|
+| 港股/A股/交易/量化 | Marcus | finance | daily | standard |
+| 优化/改进/机制/流程 | main | openclaw-ecosystem | weekly | standard |
+| 新闻/同步/简报/例行 | main | general-news | daily | **light** |
+| 重构/架构/系统设计 | main | dev-tools | weekly | **full** |
+| 学习/研究/AI/技术 | main | ai-tech | weekly | standard |
 
 ### 查看议题
 
@@ -407,7 +417,7 @@ brush-up list
 # 输出示例：
 # | ID | 名称 | 状态 | 循环次数 | 最后运行 |
 # |----|------|------|----------|----------|
-# | optimize-workflow | 优化工作流 | active | 5 | 2 小时前 |
+# | optimize-workflow | 优化 OpenClaw 工作流 | active | 5 | 2 小时前 |
 # | learn-typescript | TypeScript 学习 | paused | 12 | 昨天 |
 ```
 
@@ -639,6 +649,28 @@ brush-up start --topic="自定义" --categories=ai-tech,social-trends
 3. **定期回顾**: 每周回顾趋势
 4. **适度授权**: 低风险改进可批量授权
 5. **及时清理**: 完成的议题及时 stop/rm
+6. **多 channel 必需**: 使用 `--channel` 参数确保报告送达
+
+---
+
+## 📚 参考文档
+
+| 文档 | 内容 |
+|------|------|
+| [SKILL.md](./SKILL.md) | 本文档 - 快速入门和核心概念 |
+| [references/DETAILED_GUIDE.md](./references/DETAILED_GUIDE.md) | 详细示例、常见错误、经验教训 |
+| [UPGRADE-v2.0.md](./UPGRADE-v2.0.md) | v2.0 升级报告 |
+| [config/sources.json](./config/sources.json) | 信息源配置 |
+
+---
+
+## 📝 版本历史
+
+| 版本 | 日期 | 主要更新 |
+|------|------|----------|
+| v2.1 | 2026-03-12 | 流程分级默认策略、频率自动推荐、强制反思提示、修复 Cron channel |
+| v2.0 | 2026-03-11 | 配置自动化、流程分级、信息源自适应、Agent 能力培养 |
+| v1.0 | 2026-03-08 | 初始版本：P1-P7 基础流程 |
 
 ---
 

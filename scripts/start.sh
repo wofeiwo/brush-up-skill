@@ -31,6 +31,7 @@ CATEGORIES=""
 FREQUENCY="daily"  # daily | weekly | monthly
 MODE="standard"    # light | standard | full
 CRON_TYPE="openclaw"  # openclaw | macos | manual
+DELIVERY_CHANNEL=""  # telegram:chat_id or feishu:chat_id
 
 # OpenClaw Cron 配置目录
 OPENCLAW_CRON_DIR="$HOME/.openclaw/cron"
@@ -75,6 +76,10 @@ while [[ $# -gt 0 ]]; do
             CRON_TYPE="${1#*=}"
             shift
             ;;
+        --channel=*)
+            DELIVERY_CHANNEL="${1#*=}"
+            shift
+            ;;
         *)
             echo "❌ 未知参数：$1"
             exit 1
@@ -116,6 +121,7 @@ echo "   模式：$MODE"
 echo "   频率：$FREQUENCY"
 echo "   数据目录：$WORKSPACE_DIR"
 echo "   Cron 类型：$CRON_TYPE"
+echo "   投递渠道：${DELIVERY_CHANNEL:-自动检测}"
 
 # ============================================
 # Phase 1: 配置自动化
@@ -124,12 +130,12 @@ echo "   Cron 类型：$CRON_TYPE"
 # 1. 自动检测 Agent（如果未指定）
 if [ -z "$AGENT_ID" ] && [ -z "$OPENCLAW_AGENT_ID" ]; then
     # 根据议题名称关键词自动推荐 Agent
-    if echo "$TOPIC_NAME" | grep -qiE "金融/交易|交易|量化|Agent-A"; then
-        AGENT_ID="agent-a"
-        echo "   🤖 自动检测：议题属于 agent-a agent (金融类)"
-    elif echo "$TOPIC_NAME" | grep -qiE "创意写作类|写作 Agent | 小石男 | 剧毒妹"; then
-        AGENT_ID="agent-b"
-        echo "   🤖 自动检测：议题属于 agent-b agent (写作类)"
+    if echo "$TOPIC_NAME" | grep -qiE "港股|A 股|交易|量化|Marcus"; then
+        AGENT_ID="marcus"
+        echo "   🤖 自动检测：议题属于 marcus agent (金融/量化类)"
+    elif echo "$TOPIC_NAME" | grep -qiE "写作 | 小说 | 故事|项主任 | 小石男 | 剧毒妹"; then
+        AGENT_ID="xiangzhuren"
+        echo "   🤖 自动检测：议题属于 xiangzhuren agent (写作类)"
     else
         AGENT_ID="main"
         echo "   🤖 自动检测：使用 main agent (默认)"
@@ -143,9 +149,9 @@ fi
 
 # 2. 自动推荐 Categories（如果未指定）
 if [ -z "$CATEGORIES" ]; then
-    if echo "$TOPIC_NAME" | grep -qiE "金融/交易|交易 | 量化 | 止损 | 持仓"; then
+    if echo "$TOPIC_NAME" | grep -qiE "港股|A 股|交易 | 量化 | 止损 | 持仓"; then
         CATEGORIES="finance,ai-tech,dev-tools"
-        echo "   🏷️  自动分类：finance (金融类议题)"
+        echo "   🏷️  自动分类：finance (金融/量化类议题)"
     elif echo "$TOPIC_NAME" | grep -qiE "优化 | 改进 | 效率 | 技能|workflow|openclaw"; then
         CATEGORIES="openclaw-ecosystem,dev-tools"
         echo "   🏷️  自动分类：openclaw-ecosystem,dev-tools (优化类议题)"
@@ -169,6 +175,17 @@ if [ "$FREQUENCY" = "daily" ]; then
     elif echo "$TOPIC_NAME" | grep -qiE "港股 | 市场 | 交易 | 监控"; then
         FREQUENCY="daily"
         echo "   📅 自动频率：daily (市场监控类建议每日)"
+    fi
+fi
+
+# 3.5 自动推荐流程模式（如果用户使用默认的 standard）
+if [ "$MODE" = "standard" ]; then
+    if echo "$TOPIC_NAME" | grep -qiE "新闻|同步|简报|例行|检查|周报|日报"; then
+        MODE="light"
+        echo "   🔄 自动模式：light (信息同步类建议轻量流程)"
+    elif echo "$TOPIC_NAME" | grep -qiE "重构|架构|系统设计|季度复盘|年度规划|重大.*调整"; then
+        MODE="full"
+        echo "   🔄 自动模式：full (复杂议题建议完整流程)"
     fi
 fi
 
@@ -269,6 +286,13 @@ case $CRON_TYPE in
         
         # 创建两个 cron 任务：信息收集和报告生成
         echo "   创建信息收集任务 ($FREQ_DESC)..."
+        
+        # 构建 channel 参数
+        CHANNEL_ARG=""
+        if [ -n "$DELIVERY_CHANNEL" ]; then
+            CHANNEL_ARG="--channel=$DELIVERY_CHANNEL"
+        fi
+        
         COLLECT_JOB_ID=$(openclaw cron add \
             --name="brush-up ${TOPIC_ID}_信息收集" \
             --cron="$COLLECT_CRON" \
@@ -278,6 +302,7 @@ case $CRON_TYPE in
             --description="brush-up 议题${FREQ_DESC}信息收集" \
             --tz="Asia/Shanghai" \
             --timeout="$TIMEOUT" \
+            $CHANNEL_ARG \
             --json 2>&1 | jq -r '.id')
         
         echo "   创建报告生成任务 ($FREQ_DESC)..."
@@ -290,14 +315,17 @@ case $CRON_TYPE in
             --description="brush-up 议题${FREQ_DESC}报告生成" \
             --tz="Asia/Shanghai" \
             --timeout="$TIMEOUT" \
+            $CHANNEL_ARG \
             --json 2>&1 | jq -r '.id')
         
-        # Phase 1: 验证 Cron 配置（检查 delivery.to 是否配置）
+        # Phase 1: 验证 Cron 配置（检查 delivery.channel 是否配置）
         echo "   验证 Cron 配置..."
-        DELIVERY_CONFIG=$(openclaw cron list 2>&1 | grep -A2 "$REPORT_JOB_ID" | grep -o "telegram:[0-9]*" | head -1)
-        if [ -z "$DELIVERY_CONFIG" ]; then
-            echo "   ⚠️  警告：未检测到 Telegram 配置，报告可能无法送达"
-            echo "   提示：使用 --channel=telegram:xxx 参数指定送达渠道"
+        if [ -z "$DELIVERY_CHANNEL" ]; then
+            echo "   ⚠️  警告：未指定投递渠道（--channel），报告可能无法送达"
+            echo "   提示：使用 --channel=telegram:chat_id 或 --channel=feishu:chat_id 指定"
+            echo "   当前 cron 任务已创建，但需要在多 channel 环境下手动修复"
+        else
+            echo "   ✅ 投递渠道已配置：$DELIVERY_CHANNEL"
         fi
         
         # 保存 cron 配置（用于 stop/rm 时清理）
@@ -313,7 +341,8 @@ case $CRON_TYPE in
       "schedule": "$COLLECT_CRON",
       "enabled": true,
       "mode": "$MODE",
-      "timeout": $TIMEOUT
+      "timeout": $TIMEOUT,
+      "channel": "$DELIVERY_CHANNEL"
     },
     {
       "id": "$REPORT_JOB_ID",
@@ -322,7 +351,8 @@ case $CRON_TYPE in
       "schedule": "$REPORT_CRON",
       "enabled": true,
       "mode": "$MODE",
-      "timeout": $TIMEOUT
+      "timeout": $TIMEOUT,
+      "channel": "$DELIVERY_CHANNEL"
     }
   ]
 }

@@ -1,0 +1,28 @@
+# 本地数据（隐私敏感）
+logs/
+*.log
+
+# 环境变量和敏感配置
+.env
+.env.local
+*.key
+*.secret
+
+# 用户特定配置
+config/user-*
+!config/sources.json
+
+# 本地测试文件
+test/
+tmp/
+*.tmp
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
