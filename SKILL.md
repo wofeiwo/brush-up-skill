@@ -520,7 +520,7 @@ brush-up rm optimize-workflow
 
 **OpenClaw Cron 配置**:
 ```json
-// ~/.openclaw/workspace/brush-up/config/cron-jobs.json
+// {openclaw-workspace}/brush-up/config/cron-jobs.json
 {
   "jobs": [
     {
@@ -613,7 +613,7 @@ brush-up start --topic="自定义" --categories=ai-tech,social-trends
 ## 📂 文件结构
 
 ```
-~/.openclaw/workspace/skills/brush-up/
+{openclaw-workspace}/skills/brush-up/
 ├── SKILL.md
 ├── config/
 │   ├── topics.json

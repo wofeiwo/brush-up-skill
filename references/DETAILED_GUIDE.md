@@ -85,7 +85,7 @@ brush-up start --topic="优化工作流" --channel="telegram:CHAT_ID"
 **修复**:
 1. 使用轻量模式：`--mode=light`（timeout: 10分钟）
 2. 减少类别范围：`--categories=ai-tech` 而不是多个类别
-3. 手动增加 timeout：编辑 `~/.openclaw/workspace/agents/{agent}/brush-up/config/cron-jobs.json`
+3. 手动增加 timeout：编辑 `{openclaw-workspace}/agents/{agent}/brush-up/config/cron-jobs.json`
 
 ---
 
@@ -117,7 +117,7 @@ Channel is required when multiple channels are configured: telegram, feithu
 ### 教训 2: Cron 任务孤儿问题
 
 **时间**: 2026-03-12
-**触发**: 发现 `~/.openclaw/cron/brush-up.json` 中的任务与 active.json 不匹配
+**触发**: 发现 `{openclaw-workspace}/cron/brush-up.json` 中的任务与 active.json 不匹配
 **详情**:
 
 议题配置（active.json）和 cron 任务可能不同步：
